@@ -1,7 +1,7 @@
 import { render } from "@testing-library/react";
-import BattleRadar from "@/components/Battle/BattleRadar";
+import BattleRadar from "../../../components/Battle/BattleRadar";
 import type { ReactNode } from "react";
-import type { Pokemon } from "@/types/pokemon";
+import type { Pokemon } from "../../../types/pokemon";
 import { describe, it, expect, vi } from "vitest";
 
 interface ContainerProps {
