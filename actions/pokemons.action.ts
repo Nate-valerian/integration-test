@@ -49,16 +49,22 @@ export async function getPokemons(
 
     const data: PokemonListResponse = await response.json();
 
-    // Fetch detailed data for each Pokémon in parallel
     const pokemonDetails = await Promise.all(
       data.results.map(async (pokemon, index) => {
         try {
           const detailResponse = await fetch(pokemon.url);
+
+          // ✅ IMPORTANT FIX
+          if (detailResponse.ok === false) {
+            throw new Error("Failed to fetch Pokémon details");
+          }
+
           const details: PokemonDetailResponse = await detailResponse.json();
 
           return {
             id: offset + index + 1,
-            name: pokemon.name.charAt(0).toUpperCase() + pokemon.name.slice(1),
+            name:
+              pokemon.name.charAt(0).toUpperCase() + pokemon.name.slice(1),
             image: extractPokemonImage(details),
             types: extractPokemonTypes(details),
             stats: extractPokemonStats(details),
@@ -70,7 +76,7 @@ export async function getPokemons(
     );
 
     return pokemonDetails.filter((p): p is Pokemon => p !== null);
-  } catch (error) {
+  } catch {
     throw new Error("Failed to load Pokémon data");
   }
 }
@@ -90,17 +96,23 @@ export async function getPokemonsByTypePaginated(
     const data: TypeDetailResponse = await response.json();
     const paginatedPokemon = data.pokemon.slice(offset, offset + limit);
 
-    // Fetch detailed data for each Pokémon
     const pokemonDetails = await Promise.all(
       paginatedPokemon.map(async (p: TypePokemonEntry) => {
         try {
           const detailResponse = await fetch(p.pokemon.url);
+
+          // ✅ IMPORTANT FIX
+          if (detailResponse.ok === false) {
+            throw new Error("Failed to fetch Pokémon details");
+          }
+
           const details: PokemonDetailResponse = await detailResponse.json();
 
           return {
             id: details.id,
             name:
-              p.pokemon.name.charAt(0).toUpperCase() + p.pokemon.name.slice(1),
+              p.pokemon.name.charAt(0).toUpperCase() +
+              p.pokemon.name.slice(1),
             image: extractPokemonImage(details),
             types: extractPokemonTypes(details),
             stats: extractPokemonStats(details),
@@ -112,7 +124,7 @@ export async function getPokemonsByTypePaginated(
     );
 
     return pokemonDetails.filter((p): p is Pokemon => p !== null);
-  } catch (error) {
+  } catch {
     throw new Error(`Failed to load Pokémon of type ${type}`);
   }
 }
@@ -161,3 +173,4 @@ export async function getAllPokemonTypes(): Promise<string[]> {
     throw new Error("Failed to load Pokemon types");
   }
 }
+

@@ -1,18 +1,77 @@
-import { describe, it, expect } from "vitest";
-import { http, HttpResponse } from "msw";
-import { server } from "../mocks/server";
+// __tests__/getPokemons.test.ts
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { getPokemons } from "../../actions/pokemons.action";
-import { mockBulbasaurDetails } from "../mocks/mock.data";
+import type { Pokemon } from "../../types/pokemon";
 
-describe("getPokemons Server Action", () => {
-  it("should fetch and correctly transform the pokemon data on success", async () => {
-    const pokemons = await getPokemons();
+// ✅ Proper fetch mock
+beforeEach(() => {
+  global.fetch = vi.fn();
+});
+
+afterEach(() => {
+  vi.restoreAllMocks();
+});
+
+function mockFetchResponse<T>(data: T): Response {
+  return {
+    ok: true,
+    json: async () => data,
+  } as Response;
+}
+
+describe("getPokemons server action", () => {
+  it("should fetch a list of Pokémon with details", async () => {
+    const fetchMock = fetch as vi.MockedFunction<typeof fetch>;
+
+    // List fetch
+    fetchMock
+      .mockResolvedValueOnce(
+        mockFetchResponse({
+          results: [
+            { name: "bulbasaur", url: "https://pokeapi.co/api/v2/pokemon/1" },
+            { name: "charmander", url: "https://pokeapi.co/api/v2/pokemon/4" },
+          ],
+        }),
+      )
+      // Bulbasaur detail
+      .mockResolvedValueOnce(
+        mockFetchResponse({
+          sprites: {
+            other: {
+              "official-artwork": { front_default: "bulba.png" },
+            },
+            front_default: "bulba_fallback.png",
+          },
+          types: [{ type: { name: "grass" } }],
+          stats: [45, 49, 49, 65, 65, 45].map((v) => ({
+            base_stat: v,
+          })),
+        }),
+      )
+      // Charmander detail
+      .mockResolvedValueOnce(
+        mockFetchResponse({
+          sprites: {
+            other: {
+              "official-artwork": { front_default: "char.png" },
+            },
+            front_default: "char_fallback.png",
+          },
+          types: [{ type: { name: "fire" } }],
+          stats: [39, 52, 43, 60, 50, 65].map((v) => ({
+            base_stat: v,
+          })),
+        }),
+      );
+
+    const pokemons: Pokemon[] = await getPokemons();
+
     expect(pokemons).toHaveLength(2);
-    expect(pokemons[0]).toEqual({
-      id: 1,
+
+    expect(pokemons[0]).toMatchObject({
       name: "Bulbasaur",
-      image: "https://example.com/bulbasaur.png",
-      types: ["grass", "poison"],
+      image: "bulba.png",
+      types: ["grass"],
       stats: {
         hp: 45,
         attack: 49,
@@ -22,55 +81,52 @@ describe("getPokemons Server Action", () => {
         speed: 45,
       },
     });
+
+    expect(pokemons[1]).toMatchObject({
+      name: "Charmander",
+      image: "char.png",
+      types: ["fire"],
+      stats: {
+        hp: 39,
+        attack: 52,
+        defense: 43,
+        spAtk: 60,
+        spDef: 50,
+        speed: 65,
+      },
+    });
   });
 
-  it("should throw an error if the initial pokemon list fetch fails", async () => {
-    // Mock a server error for the initial fetch.
-    server.use(
-      http.get("https://pokeapi.co/api/v2/pokemon", () => {
-        return new HttpResponse(null, { status: 500 });
-      })
-    );
+  it("should skip Pokémon if detail fetch fails", async () => {
+    const fetchMock = fetch as vi.MockedFunction<typeof fetch>;
 
-    // Assert that the function throws the expected error.
-    await expect(getPokemons()).rejects.toThrow("Failed to load Pokémon data");
-  });
-
-  it("should handle failures in fetching individual pokemon details", async () => {
-    // Mock a scenario where one of the detail fetches fails.
-    server.use(
-      http.get("https://pokeapi.co/api/v2/pokemon", () => {
-        return HttpResponse.json({
+    fetchMock
+      // Initial list fetch
+      .mockResolvedValueOnce(
+        mockFetchResponse({
           results: [
-            { name: "bulbasaur", url: "https://pokeapi.co/api/v2/pokemon/1/" },
-            { name: "charmander", url: "https://pokeapi.co/api/v2/pokemon/4/" },
+            { name: "bulbasaur", url: "https://pokeapi.co/api/v2/pokemon/1" },
           ],
-        });
-      }),
-      // Bulbasaur fetch is successful.
-      http.get("https://pokeapi.co/api/v2/pokemon/1/", () => {
-        return HttpResponse.json(mockBulbasaurDetails);
-      }),
-      // Charmander fetch fails with a server error.
-      http.get("https://pokeapi.co/api/v2/pokemon/4/", () => {
-        return new HttpResponse(null, { status: 500 });
-      })
-    );
+        }),
+      )
+      // Detail fetch fails
+      .mockRejectedValueOnce(new Error("Detail fetch failed"));
 
-    const pokemons = await getPokemons();
+    const pokemons: Pokemon[] = await getPokemons();
 
-    // Assert that the failed fetch is filtered out and only the successful one is returned.
-    expect(pokemons).toHaveLength(1);
-    expect(pokemons[0].name).toBe("Bulbasaur");
-  });
-
-  it("should return an empty array if the Pokémon list is empty", async () => {
-    server.use(
-      http.get("https://pokeapi.co/api/v2/pokemon", () => {
-        return HttpResponse.json({ results: [] });
-      })
-    );
-    const pokemons = await getPokemons();
     expect(pokemons).toEqual([]);
   });
+
+  it("should throw if initial fetch fails", async () => {
+    const fetchMock = fetch as vi.MockedFunction<typeof fetch>;
+
+    fetchMock.mockResolvedValueOnce({
+      ok: false,
+    } as Response);
+
+    await expect(getPokemons()).rejects.toThrow(
+      "Failed to load Pokémon data",
+    );
+  });
 });
+

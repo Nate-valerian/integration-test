@@ -32,7 +32,7 @@ export default defineConfig({
   plugins: [tsconfigPaths(), react()],
   test: {
     environment: "jsdom",
-    setupFiles: "./vitest.setup.ts",
+    setupFiles: ["./vitest.setup.ts", "./__tests__/mocks/server.ts"],
     globals: true,
     include: [
       "./__tests__/**/*.test.{ts,tsx}",

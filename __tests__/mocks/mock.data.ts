@@ -1,69 +1,46 @@
-export const mockPokemonList = {
-  results: [
-    { name: "bulbasaur", url: "https://pokeapi.co/api/v2/pokemon/1" },
-    { name: "charmander", url: "https://pokeapi.co/api/v2/pokemon/4" },
-  ],
-};
-
 export const mockBulbasaurDetails = {
+  id: 1,
+  name: 'bulbasaur',
   sprites: {
     other: {
-      "official-artwork": {
-        front_default: "https://example.com/bulbasaur.png",
+      'official-artwork': {
+        front_default: 'https://example.com/bulbasaur.png',
       },
     },
-    front_default: "https://example.com/bulbasaur-small.png",
+    front_default: 'bulbasaur_fallback.png',
   },
-  types: [{ type: { name: "grass" } }, { type: { name: "poison" } }],
+  types: [
+    { type: { name: 'grass' } },
+    { type: { name: 'poison' } },
+  ],
   stats: [
-    { base_stat: 45, stat: { name: "hp" } },
-    { base_stat: 49, stat: { name: "attack" } },
-    { base_stat: 49, stat: { name: "defense" } },
-    { base_stat: 65, stat: { name: "special-attack" } },
-    { base_stat: 65, stat: { name: "special-defense" } },
-    { base_stat: 45, stat: { name: "speed" } },
+    { base_stat: 45, stat: { name: 'hp' } },
+    { base_stat: 49, stat: { name: 'attack' } },
+    { base_stat: 49, stat: { name: 'defense' } },
+    { base_stat: 65, stat: { name: 'special-attack' } },
+    { base_stat: 65, stat: { name: 'special-defense' } },
+    { base_stat: 45, stat: { name: 'speed' } },
   ],
 };
 
 export const mockCharmanderDetails = {
+  id: 4,
+  name: 'charmander',
   sprites: {
     other: {
-      "official-artwork": {
-        front_default: "https://example.com/charmander.png",
+      'official-artwork': {
+        front_default: 'https://example.com/charmander.png',
       },
     },
-    front_default: "https://example.com/charmander-small.png",
+    front_default: 'charmander_fallback.png',
   },
-  types: [{ type: { name: "fire" } }],
+  types: [{ type: { name: 'fire' } }],
   stats: [
-    { base_stat: 39, stat: { name: "hp" } },
-    { base_stat: 52, stat: { name: "attack" } },
-    { base_stat: 43, stat: { name: "defense" } },
-    { base_stat: 60, stat: { name: "special-attack" } },
-    { base_stat: 50, stat: { name: "special-defense" } },
-    { base_stat: 65, stat: { name: "speed" } },
-  ],
-};
-
-export const mockPokemonTypes = {
-  results: [
-    { name: "normal" },
-    { name: "fire" },
-    { name: "water" },
-    { name: "electric" },
-    { name: "grass" },
-    { name: "ice" },
-    { name: "fighting" },
-    { name: "poison" },
-    { name: "ground" },
-    { name: "flying" },
-    { name: "psychic" },
-    { name: "bug" },
-    { name: "rock" },
-    { name: "ghost" },
-    { name: "dragon" },
-    { name: "dark" },
-    { name: "steel" },
-    { name: "fairy" },
+    { base_stat: 39, stat: { name: 'hp' } },
+    { base_stat: 52, stat: { name: 'attack' } },
+    { base_stat: 43, stat: { name: 'defense' } },
+    { base_stat: 60, stat: { name: 'special-attack' } },
+    { base_stat: 50, stat: { name: 'special-defense' } },
+    { base_stat: 65, stat: { name: 'speed' } },
   ],
 };

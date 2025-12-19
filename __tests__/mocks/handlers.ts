@@ -23,3 +23,4 @@ export const handlers = [
     return HttpResponse.json(mockCharmanderDetails);
   }),
 ];
+export default handlers;
